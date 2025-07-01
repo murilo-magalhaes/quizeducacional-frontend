@@ -1,0 +1,392 @@
+'use client'
+
+import {Button} from "primereact/button";
+import {useEffect, useState} from "react";
+import {Dialog} from "primereact/dialog";
+import useToastContext from "@/hooks/toast";
+import {emptyPlayer, Player} from "@/interfaces/player.interface";
+import {emptySubject, Subject} from "@/interfaces/subject.interface";
+import {Content, emptyContent} from "@/interfaces/content.interface";
+import {ELevel, emptyQuestion, Question, TLevel} from "@/interfaces/question.interface";
+import {Alternative, emptyAlternative} from "@/interfaces/alternative.interface";
+import {api} from "@/api";
+import {DataTable} from "primereact/datatable";
+import {Column} from "primereact/column";
+import {InputText} from "primereact/inputtext";
+import {InputTextarea} from "primereact/inputtextarea";
+import {Dropdown} from "primereact/dropdown";
+import {SelectButton} from "primereact/selectbutton";
+
+export default function HomePage() {
+
+    const toast = useToastContext();
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+
+    const [subjectsDialogOpen, setSubjectsDialogOpen] = useState<boolean>(false);
+    const [subjects, setSubjects] = useState<Subject[]>([])
+    const [subject, setSubject] = useState<Subject>(emptySubject);
+
+    const [contentsDialogOpen, setContentsDialogOpen] = useState<boolean>(false);
+    const [contents, setContents] = useState<Content[]>([])
+    const [content, setContent] = useState<Content>(emptyContent)
+
+    const [questionsDialogOpen, setQuestionsDialogOpen] = useState<boolean>(false);
+    const [questions, setQuestions] = useState<Question[]>([])
+    const [question, setQuestion] = useState<Question>(emptyQuestion)
+
+    const [alternativesDialogOpen, setAlternativesDialogOpen] = useState<boolean>(false);
+    const [alternatives, setAlternatives] = useState<Alternative[]>([])
+    const [alternative, setAlternative] = useState<Alternative>(emptyAlternative)
+
+    const [player, setPlayer] = useState<Player>(emptyPlayer);
+
+    useEffect(() => {
+        const player = JSON.parse(localStorage.getItem("player") || '');
+        setPlayer(player);
+    }, [])
+
+    const createSubject = async () => {
+        setIsLoading(true);
+        api.post(`/subjects`, {
+            title: subject.title,
+        })
+            .then(res => {
+                console.log(res);
+                loadSubjects().then()
+            })
+            .catch(err => {
+                console.error(err);
+                toast('error', 'Erro', err.response.data.message);
+            }).finally(() => setIsLoading(false));
+    }
+
+    const loadSubjects = async () => {
+        setIsLoading(true);
+        api.get(`/subjects`)
+            .then(res => {
+                console.log(res);
+                setSubjects(res.data.content);
+            })
+            .catch(err => {
+                console.error(err);
+                toast('error', 'Erro', err.response.data.message);
+            }).finally(() => setIsLoading(false));
+    }
+
+    const deleteSubject = async (id: number) => {
+        setIsLoading(true);
+        api.delete(`/subjects/${id}`)
+            .then(res => {
+                console.log(res);
+                loadSubjects().then()
+            })
+            .catch(err => {
+                console.error(err);
+                toast('error', 'Erro', err.response.data.message);
+            }).finally(() => setIsLoading(false));
+    }
+
+    const createContent = async () => {
+        setIsLoading(true);
+        api.post(`/contents`, {
+            title: content.title,
+            subjectId: content.subjectId,
+        })
+            .then(res => {
+                console.log(res);
+                loadContents().then()
+            })
+            .catch(err => {
+                console.error(err);
+                toast('error', 'Erro', err.response.data.message);
+            }).finally(() => setIsLoading(false));
+    }
+
+    const loadContents = async () => {
+        setIsLoading(true);
+        api.get(`/contents`)
+            .then(res => {
+                console.log(res);
+                setContents(res.data.content)
+            })
+            .catch(err => {
+                console.error(err);
+                toast('error', 'Erro', err.response.data.message);
+            }).finally(() => setIsLoading(false));
+    }
+
+    const deleteContent = async (id: number) => {
+        setIsLoading(true);
+        api.delete(`/contents/${id}`)
+            .then(res => {
+                console.log(res);
+                loadContents().then()
+            })
+            .catch(err => {
+                console.error(err);
+                toast('error', 'Erro', err.response.data.message);
+            }).finally(() => setIsLoading(false));
+    }
+
+    const createQuestion = async () => {
+        setIsLoading(true);
+        api.post(`/questions`, {
+            statement: question.statement,
+            contentId: question.contentId,
+            level: question.level,
+        })
+            .then(res => {
+                console.log(res);
+                loadQuestions().then()
+            })
+            .catch(err => {
+                console.error(err);
+                toast('error', 'Erro', err.response.data.message);
+            }).finally(() => setIsLoading(false));
+    }
+
+    const loadQuestions = async () => {
+        setIsLoading(true);
+        api.get(`/questions`)
+            .then(res => {
+                console.log(res);
+                setQuestions(res.data.content);
+            })
+            .catch(err => {
+                console.error(err);
+                toast('error', 'Erro', err.response.data.message);
+            }).finally(() => setIsLoading(false));
+    }
+
+    const deleteQuestion = async (id: number) => {
+        setIsLoading(true);
+        api.delete(`/questions/${id}`)
+            .then(res => {
+                console.log(res);
+                loadQuestions().then()
+            })
+            .catch(err => {
+                console.error(err);
+                toast('error', 'Erro', err.response.data.message);
+            }).finally(() => setIsLoading(false));
+    }
+
+    const createAlternative = async () => {
+        setIsLoading(true);
+        api.post(`/alternatives`, {
+            alternativeText: alternative.alternativeText,
+            contentId: alternative.contentId
+        })
+            .then(res => {
+                console.log(res);
+                loadAlternatives().then()
+                setAlternatives(res.data.content);
+            })
+            .catch(err => {
+                console.error(err);
+                toast('error', 'Erro', err.response.data.message);
+            }).finally(() => setIsLoading(false));
+    }
+
+    const loadAlternatives = async () => {
+        setIsLoading(true);
+        api.get(`/alternatives`)
+            .then(res => {
+                console.log(res);
+                setAlternatives(res.data.content);
+            })
+            .catch(err => {
+                console.error(err);
+                toast('error', 'Erro', err.response.data.message);
+            }).finally(() => setIsLoading(false));
+    }
+
+    const deleteAlternative = async (id: number) => {
+        setIsLoading(true);
+        api.delete(`/alternatives/${id}`)
+            .then(res => {
+                console.log(res);
+                loadAlternatives().then()
+            })
+            .catch(err => {
+                console.error(err);
+                toast('error', 'Erro', err.response.data.message);
+            }).finally(() => setIsLoading(false));
+    }
+
+    const renderDeleteButton = (entity: string, id: number) => {
+        return (
+            <Button key={id} onClick={() => {
+                switch (entity) {
+                    case "subjects":
+                        deleteSubject(id).then();
+                        break;
+                    case "contents":
+                        deleteContent(id).then();
+                        break;
+                    case "questions":
+                        deleteQuestion(id).then();
+                        break;
+                    case "alternatives":
+                        deleteAlternative(id).then();
+                        break;
+                    default:
+                        break;
+                }
+            }} severity='danger' icon={'pi pi-trash'}/>
+        )
+    }
+
+    const renderColumnLevel = (level: ELevel) => TLevel[level];
+
+    return (
+        <main className={'px-8'}>
+            <div className={'flex w-full'}>
+                <div className="w-10 flex flex-wrap gap-2">
+                    <Button label='Disciplinas' type={'button'} onClick={async () => {
+                        setSubjectsDialogOpen(true)
+                        loadSubjects().then()
+                    }}/>
+                    <Button label='Conteúdos' type={'button'} onClick={async () => {
+                        setContentsDialogOpen(true)
+                        loadContents().then()
+                        loadSubjects().then()
+                    }}/>
+                    <Button label='Questões' type={'button'} onClick={async () => {
+                        setQuestionsDialogOpen(true)
+                        loadContents().then()
+                        loadQuestions().then()
+                    }}/>
+                    <Button label='Alternativas' type={'button'} onClick={async () => {
+                        setAlternativesDialogOpen(true)
+                        loadContents().then()
+                        loadAlternatives().then()
+                    }}/>
+                </div>
+                <div className={'w-2 flex align-items-center justify-content-center'}>
+                    <span><b>Jogador: </b>{player.name}</span>
+                </div>
+            </div>
+
+            <Dialog className={'border-primary'} onHide={() => setSubjectsDialogOpen(false)}
+                    visible={subjectsDialogOpen} header={'Disciplinas'}>
+
+                <div className={'p-fluid grid formgrid'}>
+                    <div className={'field col-12'}>
+                        <label htmlFor={'title'}>Título</label>
+                        <InputText name={'title'} value={subject.title}
+                                   onChange={e => setSubject({...subject, title: e.target.value})}
+                                   placeholder={'Ex.: Geografia...'}/>
+                    </div>
+                    <div className={'field col-12'}>
+                        <Button label={'Nova disciplina'} icon={'pi pi-plus'} type={'button'} onClick={createSubject}/>
+                    </div>
+                </div>
+
+                <DataTable value={subjects} emptyMessage={'Nenhuma disciplina encontrada'}>
+                    <Column header={'Título'} field={'title'}></Column>
+                    <Column align={'right'} header={'*'} body={r => renderDeleteButton('subjects', r.id)}></Column>
+                </DataTable>
+            </Dialog>
+
+            <Dialog className={'border-primary'} onHide={() => setContentsDialogOpen(false)}
+                    visible={contentsDialogOpen} header={'Conteúdos'}>
+
+                <div className={'p-fluid grid formgrid'}>
+                    <div className={'field col-12'}>
+                        <label htmlFor={'subjectId'}>Disciplina</label>
+                        <Dropdown options={subjects.map(s => ({label: s.title, value: s.id}))} value={content.subjectId}
+                                  placeholder={'Selecione uma disciplina'}
+                                  onChange={e => setContent({...content, subjectId: e.target.value})}/>
+                    </div>
+                    <div className={'field col-12'}>
+                        <label htmlFor={'title'}>Título</label>
+                        <InputText name={'title'} value={content.title}
+                                   onChange={e => setContent({...content, title: e.target.value})}
+                                   placeholder={'Ex.: Biomas...'}/>
+                    </div>
+                    <div className={'field col-12'}>
+                        <Button label={'Novo conteúdo'} icon={'pi pi-plus'} type={'button'} onClick={createContent}/>
+                    </div>
+                </div>
+
+                <DataTable value={contents} emptyMessage={'Nenhum conteúdo encontrado'}>
+                    <Column sortable header={'Título'} field={'title'}></Column>
+                    <Column sortable header={'Disciplina'} field={'subject.title'}></Column>
+                    <Column align={'right'} header={'*'} body={r => renderDeleteButton('contents', r.id)}></Column>
+                </DataTable>
+            </Dialog>
+
+            <Dialog className={'border-primary'} onHide={() => setQuestionsDialogOpen(false)}
+                    visible={questionsDialogOpen} header={'Questões'}>
+
+                <div className={'p-fluid grid formgrid'}>
+                    <div className={'field col-12'}>
+                        <label htmlFor={'contentId'}>Conteúdo</label>
+                        <Dropdown options={contents.map(c => ({label: `${c.title} - ${c.subject.title}`, value: c.id}))}
+                                  value={question.contentId}
+                                  placeholder={'Selecione um conteúdo'}
+                                  onChange={e => setQuestion({...question, contentId: e.target.value})}/>
+                    </div>
+                    <div className={'field col-12'}>
+                        <label htmlFor={'statement'}>Enunciado</label>
+                        <InputTextarea name={'statement'} value={question.statement}
+                                       onChange={e => setQuestion({...question, statement: e.target.value})}
+                                       placeholder={'Ex.: Qual é o bioma predominante no estado de Goiás?...'}/>
+                    </div>
+                    <div className={'field col-12'}>
+                        <label htmlFor={'level'}>Nível de dificuldade</label>
+                        <SelectButton value={question.level} options={[
+                            {label: 'Fácil', value: 'EASY'},
+                            {label: 'Médio', value: 'MEDIUM'},
+                            {label: 'Difícil', value: 'HARD'},
+                        ]} onChange={e => setQuestion({...question, level: e.target.value})}/>
+                    </div>
+                    <div className={'field col-12 mt-4'}>
+                        <Button label={'Nova questão'} icon={'pi pi-plus'} type={'button'} onClick={createQuestion}/>
+                    </div>
+                </div>
+
+                <DataTable value={questions} emptyMessage={'Nenhuma questão encontrada'}>
+                    <Column header={'Enunciado'} field={'statement'}></Column>
+                    <Column header={'Disciplina'} field={'content.subject.title'}></Column>
+                    <Column header={'Conteúdo'} field={'content.title'}></Column>
+                    <Column header={'Nível'} body={r => renderColumnLevel(r.level)}></Column>
+                    <Column align={'right'} header={'*'} body={r => renderDeleteButton('questions', r.id)}></Column>
+
+                </DataTable>
+            </Dialog>
+            <Dialog className={'border-primary'} onHide={() => setAlternativesDialogOpen(false)}
+                    visible={alternativesDialogOpen} header={'Alternativas'}>
+
+                <div className={'p-fluid grid formgrid'}>
+                    <div className={'field col-12'}>
+                        <label htmlFor={'contentId'}>Conteúdo</label>
+                        <Dropdown
+                            options={contents.map(c => ({label: `${c.title} - ${c.subject.title}`, value: c.id}))}
+                            value={alternative.contentId}
+                            placeholder={'Selecione um conteúdo'}
+                            onChange={e => setAlternative({...alternative, contentId: e.target.value})}/>
+                    </div>
+                    <div className={'field col-12'}>
+                        <label htmlFor={'content'}>Alternativa</label>
+                        <InputTextarea name={'content'} value={alternative.alternativeText}
+                                       onChange={e => setAlternative({...alternative, alternativeText: e.target.value})}
+                                       placeholder={'Ex.: Cerrado...'}/>
+                    </div>
+                    <div className={'field col-12'}>
+                        <Button label={'Nova alternativa'} icon={'pi pi-plus'} type={'button'}
+                                onClick={createAlternative}/>
+                    </div>
+                </div>
+
+                <DataTable value={alternatives} emptyMessage={'Nenhuma alternativa encontrada'}>
+                    <Column field={'alternativeText'} header={'Texto'}></Column>
+                    <Column header={'Disciplina'} field={'content.subject.title'}></Column>
+                    <Column header={'Conteúdo'} field={'content.title'}></Column>
+                    <Column align={'right'} header={'*'} body={r => renderDeleteButton('alternatives', r.id)}></Column>
+                </DataTable>
+            </Dialog>
+        </main>
+    )
+}
