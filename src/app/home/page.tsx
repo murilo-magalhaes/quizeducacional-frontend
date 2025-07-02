@@ -16,6 +16,9 @@ import {InputText} from "primereact/inputtext";
 import {InputTextarea} from "primereact/inputtextarea";
 import {Dropdown} from "primereact/dropdown";
 import {SelectButton} from "primereact/selectbutton";
+import CreateGameDialog from "@/components/game/dialog-create";
+import {Game} from "@/interfaces/game.interface";
+import {InputSwitch} from "primereact/inputswitch";
 
 export default function HomePage() {
 
@@ -38,12 +41,23 @@ export default function HomePage() {
     const [alternatives, setAlternatives] = useState<Alternative[]>([])
     const [alternative, setAlternative] = useState<Alternative>(emptyAlternative)
 
+    const [gameDialogOpen, setGameDialogOpen] = useState<boolean>(false);
+    const [games, setGames] = useState<Game[]>([])
+
     const [player, setPlayer] = useState<Player>(emptyPlayer);
 
     useEffect(() => {
         const player = JSON.parse(localStorage.getItem("player") || '');
         setPlayer(player);
     }, [])
+
+    useEffect(() => {
+        if(!alternative.correct) setAlternative({...alternative, correctToQuestionId: 0})
+    }, [alternative.correct]);
+
+    useEffect(() => {
+        if(!alternative.forDoubt) setAlternative({...alternative, forDoubtToQuestionId: 0})
+    }, [alternative.forDoubt]);
 
     const createSubject = async () => {
         setIsLoading(true);
@@ -175,12 +189,15 @@ export default function HomePage() {
         setIsLoading(true);
         api.post(`/alternatives`, {
             alternativeText: alternative.alternativeText,
-            contentId: alternative.contentId
+            contentId: alternative.contentId,
+            correct: alternative.correct,
+            correctToQuestionId: alternative.correctToQuestionId,
+            forDoubt: alternative.forDoubt,
+            forDoubtToQuestionId: alternative.forDoubtToQuestionId,
         })
             .then(res => {
                 console.log(res);
                 loadAlternatives().then()
-                setAlternatives(res.data.content);
             })
             .catch(err => {
                 console.error(err);
@@ -207,6 +224,19 @@ export default function HomePage() {
             .then(res => {
                 console.log(res);
                 loadAlternatives().then()
+            })
+            .catch(err => {
+                console.error(err);
+                toast('error', 'Erro', err.response.data.message);
+            }).finally(() => setIsLoading(false));
+    }
+
+    const loadGames = async () => {
+        setIsLoading(true);
+        api.get(`/games`)
+            .then(res => {
+                console.log(res);
+                setGames(res.data.content);
             })
             .catch(err => {
                 console.error(err);
@@ -260,6 +290,7 @@ export default function HomePage() {
                     <Button label='Alternativas' type={'button'} onClick={async () => {
                         setAlternativesDialogOpen(true)
                         loadContents().then()
+                        loadQuestions().then()
                         loadAlternatives().then()
                     }}/>
                 </div>
@@ -268,7 +299,16 @@ export default function HomePage() {
                 </div>
             </div>
 
-            <Dialog className={'border-primary'} onHide={() => setSubjectsDialogOpen(false)}
+            <div className={'mt-6'}>
+                <Button label={'Gerar novo jogo'} severity='info' onClick={() => setGameDialogOpen(true)}/>
+
+                <CreateGameDialog visible={gameDialogOpen} onClose={async () => {
+                    setGameDialogOpen(false)
+                    loadGames().then()
+                }}/>
+            </div>
+
+            <Dialog className={'border-primary w-8'} onHide={() => setSubjectsDialogOpen(false)}
                     visible={subjectsDialogOpen} header={'Disciplinas'}>
 
                 <div className={'p-fluid grid formgrid'}>
@@ -284,12 +324,12 @@ export default function HomePage() {
                 </div>
 
                 <DataTable value={subjects} emptyMessage={'Nenhuma disciplina encontrada'}>
-                    <Column header={'Título'} field={'title'}></Column>
+                    <Column sortable header={'Título'} field={'title'}></Column>
                     <Column align={'right'} header={'*'} body={r => renderDeleteButton('subjects', r.id)}></Column>
                 </DataTable>
             </Dialog>
 
-            <Dialog className={'border-primary'} onHide={() => setContentsDialogOpen(false)}
+            <Dialog className={'border-primary w-8'} onHide={() => setContentsDialogOpen(false)}
                     visible={contentsDialogOpen} header={'Conteúdos'}>
 
                 <div className={'p-fluid grid formgrid'}>
@@ -317,7 +357,7 @@ export default function HomePage() {
                 </DataTable>
             </Dialog>
 
-            <Dialog className={'border-primary'} onHide={() => setQuestionsDialogOpen(false)}
+            <Dialog className={'border-primary w-8'} onHide={() => setQuestionsDialogOpen(false)}
                     visible={questionsDialogOpen} header={'Questões'}>
 
                 <div className={'p-fluid grid formgrid'}>
@@ -348,15 +388,15 @@ export default function HomePage() {
                 </div>
 
                 <DataTable value={questions} emptyMessage={'Nenhuma questão encontrada'}>
-                    <Column header={'Enunciado'} field={'statement'}></Column>
-                    <Column header={'Disciplina'} field={'content.subject.title'}></Column>
-                    <Column header={'Conteúdo'} field={'content.title'}></Column>
-                    <Column header={'Nível'} body={r => renderColumnLevel(r.level)}></Column>
+                    <Column sortable header={'Enunciado'} field={'statement'}></Column>
+                    <Column sortable header={'Disciplina'} field={'content.subject.title'}></Column>
+                    <Column sortable header={'Conteúdo'} field={'content.title'}></Column>
+                    <Column sortable header={'Nível'} body={r => renderColumnLevel(r.level)}></Column>
                     <Column align={'right'} header={'*'} body={r => renderDeleteButton('questions', r.id)}></Column>
 
                 </DataTable>
             </Dialog>
-            <Dialog className={'border-primary'} onHide={() => setAlternativesDialogOpen(false)}
+            <Dialog className={'border-primary w-8'} onHide={() => setAlternativesDialogOpen(false)}
                     visible={alternativesDialogOpen} header={'Alternativas'}>
 
                 <div className={'p-fluid grid formgrid'}>
@@ -369,21 +409,61 @@ export default function HomePage() {
                             onChange={e => setAlternative({...alternative, contentId: e.target.value})}/>
                     </div>
                     <div className={'field col-12'}>
-                        <label htmlFor={'content'}>Alternativa</label>
-                        <InputTextarea name={'content'} value={alternative.alternativeText}
+                        <label htmlFor={'alternativeText'}>Alternativa</label>
+                        <InputTextarea name={'alternativeText'} value={alternative.alternativeText}
                                        onChange={e => setAlternative({...alternative, alternativeText: e.target.value})}
                                        placeholder={'Ex.: Cerrado...'}/>
                     </div>
-                    <div className={'field col-12'}>
+                    <div className={'field col-2 flex align-items-center flex-column gap-2'}>
+                        <label htmlFor={'correct'}>É correta?</label>
+                        <InputSwitch checked={alternative.correct}
+                                     onChange={e => setAlternative({...alternative, correct: e.target.value})}/>
+                    </div>
+                    <div className={'field col-10'}>
+                        <label htmlFor={'correctToQuestionId'}>Para qual questão?</label>
+                        <Dropdown
+                            name={'correctToQuestionId'}
+                            emptyMessage={'Nenhuma questão encontrada para o conteúdo selecionado'}
+                            disabled={!alternative.correct}
+                            options={questions.filter(q => q.contentId === alternative.contentId).map(q => ({
+                                label: q.statement,
+                                value: q.id
+                            }))}
+                            value={alternative.correctToQuestionId}
+                            placeholder={'Selecione uma questão'}
+                            onChange={e => setAlternative({...alternative, correctToQuestionId: e.target.value})}/>
+                    </div>
+                    <div className={'field col-2 flex align-items-center flex-column gap-2'}>
+                        <label htmlFor={'forDoubt'}>Gerar dúvida?</label>
+                        <InputSwitch checked={alternative.forDoubt}
+                                     onChange={e => setAlternative({...alternative, forDoubt: e.target.value})}/>
+                    </div>
+                    <div className={'field col-10'}>
+                        <label htmlFor={'forDoubtToQuestionId'}>Para qual questão?</label>
+                        <Dropdown
+                            emptyMessage={'Nenhuma questão encontrada para o conteúdo selecionado'}
+                            name={'forDoubtToQuestionId'}
+                            disabled={!alternative.forDoubt}
+                            options={questions.filter(q => q.contentId === alternative.contentId).map(q => ({
+                                label: q.statement,
+                                value: q.id
+                            }))}
+                            value={alternative.forDoubtToQuestionId}
+                            placeholder={'Selecione uma questão'}
+                            onChange={e => setAlternative({...alternative, forDoubtToQuestionId: e.target.value})}/>
+                    </div>
+                    <div className={'field col-12 mt-4'}>
                         <Button label={'Nova alternativa'} icon={'pi pi-plus'} type={'button'}
                                 onClick={createAlternative}/>
                     </div>
                 </div>
 
+                <p>Alternativas cadastradas:</p>
+
                 <DataTable value={alternatives} emptyMessage={'Nenhuma alternativa encontrada'}>
-                    <Column field={'alternativeText'} header={'Texto'}></Column>
-                    <Column header={'Disciplina'} field={'content.subject.title'}></Column>
-                    <Column header={'Conteúdo'} field={'content.title'}></Column>
+                    <Column sortable field={'alternativeText'} header={'Texto'}></Column>
+                    <Column sortable header={'Disciplina'} field={'content.subject.title'}></Column>
+                    <Column sortable header={'Conteúdo'} field={'content.title'}></Column>
                     <Column align={'right'} header={'*'} body={r => renderDeleteButton('alternatives', r.id)}></Column>
                 </DataTable>
             </Dialog>
