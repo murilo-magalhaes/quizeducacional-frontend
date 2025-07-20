@@ -13,9 +13,8 @@ export default function Home() {
     const router = useRouter();
 
     const [name, setName] = useState<string>('');
-    const [isLogin, setIsLogin] = useState<boolean>(true); // true = login, false = criar
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (isLogin: boolean) => {
         if (!name.trim()) {
             toast('warn', 'Atenção', 'Digite um nome válido.');
             return;
@@ -56,16 +55,14 @@ export default function Home() {
                 className="w-full p-button-outlined"
                 label="Criar novo jogador"
                 onClick={() => {
-                    setIsLogin(false);
-                    handleSubmit();
+                    handleSubmit(false).then();
                 }}
             />
             <Button
                 className="w-full"
                 label="Entrar"
                 onClick={() => {
-                    setIsLogin(true);
-                    handleSubmit();
+                    handleSubmit(true).then();
                 }}
             />
         </div>
@@ -74,7 +71,7 @@ export default function Home() {
     return (
         <main>
             <div className="flex justify-content-center">
-                <Card footer={footer} className="w-3">
+                <Card footer={footer} className="w-3 px-2 py-4">
                     <div className="p-fluid grid formgrid mb-0">
                         <div className="field col-12">
                             <label htmlFor="name" className="text-center w-full mb-4">

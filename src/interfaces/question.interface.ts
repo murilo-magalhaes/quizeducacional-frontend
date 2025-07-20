@@ -1,5 +1,6 @@
 import {Abstract, emptyAbstract} from "@/interfaces/abstract.interface";
 import {Content, emptyContent} from "@/interfaces/content.interface";
+import {Alternative} from "@/interfaces/alternative.interface";
 
 export enum ELevel {
     EASY = 'EASY',
@@ -18,6 +19,7 @@ export interface Question extends Abstract{
     contentId: number;
     content: Content;
     level: ELevel;
+    alternatives: Alternative[];
 }
 
 export const emptyQuestion: Question = {
@@ -26,4 +28,5 @@ export const emptyQuestion: Question = {
     contentId: 0,
     content: emptyContent,
     level: ELevel.MEDIUM,
+    alternatives: [],
 }

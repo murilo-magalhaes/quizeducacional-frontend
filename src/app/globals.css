@@ -12,3 +12,11 @@ body {
 .border-primary {
   color: var(--primary-color);
 }
+
+.p-card-content, .p-card-body {
+  padding: 0 5px;
+}
+
+.border-hover:hover {
+  border: 1px solid var(--primary-color);
+}

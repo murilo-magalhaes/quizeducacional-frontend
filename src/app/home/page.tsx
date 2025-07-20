@@ -19,6 +19,10 @@ import {SelectButton} from "primereact/selectbutton";
 import CreateGameDialog from "@/components/game/dialog-create";
 import {Game} from "@/interfaces/game.interface";
 import {InputSwitch} from "primereact/inputswitch";
+import {Card} from "primereact/card";
+import {mockGames} from "@/mock/game.mock";
+import {EGameStatus} from "@/interfaces/gamePlayer.interface";
+import GameCard from "@/components/game/card";
 
 export default function HomePage() {
 
@@ -47,16 +51,24 @@ export default function HomePage() {
     const [player, setPlayer] = useState<Player>(emptyPlayer);
 
     useEffect(() => {
+        loadContents().then()
         const player = JSON.parse(localStorage.getItem("player") || '');
         setPlayer(player);
     }, [])
 
     useEffect(() => {
-        if(!alternative.correct) setAlternative({...alternative, correctToQuestionId: 0})
+        setGames(mockGames.map(game => ({
+            ...game,
+            content: contents.find(c => c.id === game.contentId) || emptyContent,
+        })));
+    }, [contents]);
+
+    useEffect(() => {
+        if (!alternative.correct) setAlternative({...alternative, correctToQuestionId: 0})
     }, [alternative.correct]);
 
     useEffect(() => {
-        if(!alternative.forDoubt) setAlternative({...alternative, forDoubtToQuestionId: 0})
+        if (!alternative.forDoubt) setAlternative({...alternative, forDoubtToQuestionId: 0})
     }, [alternative.forDoubt]);
 
     const createSubject = async () => {
@@ -300,12 +312,21 @@ export default function HomePage() {
             </div>
 
             <div className={'mt-6'}>
-                <Button label={'Gerar novo jogo'} severity='info' onClick={() => setGameDialogOpen(true)}/>
+                <Button label={'Gerar novo jogo'} className={'p-button-outlined'}
+                        onClick={() => setGameDialogOpen(true)}/>
 
                 <CreateGameDialog visible={gameDialogOpen} onClose={async () => {
                     setGameDialogOpen(false)
                     loadGames().then()
                 }}/>
+            </div>
+
+            <div className={'w-full mt-6 grid gap-2'}>
+                {games.map(game => (
+                    <div className={'col-4'}>
+                        <GameCard game={game} />
+                    </div>
+                ))}
             </div>
 
             <Dialog className={'border-primary w-8'} onHide={() => setSubjectsDialogOpen(false)}
@@ -324,6 +345,7 @@ export default function HomePage() {
                 </div>
 
                 <DataTable value={subjects} emptyMessage={'Nenhuma disciplina encontrada'}>
+                    <Column header={'ID'} field={'id'} sortable></Column>
                     <Column sortable header={'Título'} field={'title'}></Column>
                     <Column align={'right'} header={'*'} body={r => renderDeleteButton('subjects', r.id)}></Column>
                 </DataTable>
@@ -351,6 +373,7 @@ export default function HomePage() {
                 </div>
 
                 <DataTable value={contents} emptyMessage={'Nenhum conteúdo encontrado'}>
+                    <Column header={'ID'} field={'id'} sortable></Column>
                     <Column sortable header={'Título'} field={'title'}></Column>
                     <Column sortable header={'Disciplina'} field={'subject.title'}></Column>
                     <Column align={'right'} header={'*'} body={r => renderDeleteButton('contents', r.id)}></Column>
@@ -388,6 +411,7 @@ export default function HomePage() {
                 </div>
 
                 <DataTable value={questions} emptyMessage={'Nenhuma questão encontrada'}>
+                    <Column header={'ID'} field={'id'} sortable></Column>
                     <Column sortable header={'Enunciado'} field={'statement'}></Column>
                     <Column sortable header={'Disciplina'} field={'content.subject.title'}></Column>
                     <Column sortable header={'Conteúdo'} field={'content.title'}></Column>
@@ -461,6 +485,7 @@ export default function HomePage() {
                 <p>Alternativas cadastradas:</p>
 
                 <DataTable value={alternatives} emptyMessage={'Nenhuma alternativa encontrada'}>
+                    <Column header={'ID'} field={'id'} sortable></Column>
                     <Column sortable field={'alternativeText'} header={'Texto'}></Column>
                     <Column sortable header={'Disciplina'} field={'content.subject.title'}></Column>
                     <Column sortable header={'Conteúdo'} field={'content.title'}></Column>
