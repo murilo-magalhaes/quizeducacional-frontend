@@ -27,7 +27,6 @@ import { SelectButton } from 'primereact/selectbutton';
 import CreateGameDialog from '@/components/game/dialog-create';
 import { emptyGame, Game } from '@/interfaces/game.interface';
 import { InputSwitch } from 'primereact/inputswitch';
-import { mockGames } from '@/mock/game.mock';
 import GameCard from '@/components/game/card';
 import { Divider } from 'primereact/divider';
 import {
@@ -64,25 +63,17 @@ export default function HomePage() {
   const [currentQuestion, setCurrentQuestion] =
     useState<GameQuestion>(emptyGameQuestion);
 
+  const [gameDetailsDialogOpen, setGameDetailsDialogOpen] =
+    useState<boolean>(false);
+
   const [player, setPlayer] = useState<Player>(emptyPlayer);
 
   useEffect(() => {
     loadContents().then();
+    loadGames().then();
     const player = JSON.parse(localStorage.getItem('player') || '');
     setPlayer(player);
   }, []);
-
-  useEffect(() => {
-    setGames(
-      mockGames
-        .map((game) => ({
-          ...game,
-          content:
-            contents.find((c) => c.id === game.contentId) || emptyContent,
-        }))
-        .sort((a, b) => a.id - b.id),
-    );
-  }, [contents]);
 
   useEffect(() => {
     if (!alternative.correct)
@@ -322,6 +313,17 @@ export default function HomePage() {
     setGame(emptyGame);
   };
 
+  const handleOpenGameDetailsDialog = (game: Game) => {
+    setGameDetailsDialogOpen(true);
+    setGame(game);
+    findCurrentQuestion(game);
+  };
+
+  const handleCloseGameDetailsDialog = () => {
+    setGameDetailsDialogOpen(false);
+    setGame(emptyGame);
+  };
+
   const renderDeleteButton = (entity: string, id: number) => {
     return (
       <Button
@@ -352,6 +354,7 @@ export default function HomePage() {
 
   const renderColumnLevel = (level: ELevel) => TLevel[level];
 
+  // @ts-ignore
   return (
     <main className={'px-8'}>
       <div className={'flex w-full'}>
@@ -423,6 +426,7 @@ export default function HomePage() {
             <GameCard
               game={game}
               onStartGame={() => handleOpenGameDialog(game)}
+              onViewDetails={() => handleOpenGameDetailsDialog(game)}
             />
           </div>
         ))}
@@ -762,6 +766,19 @@ export default function HomePage() {
           <div className={'col-12'}>
             <label>Pergunta {currentQuestion?.position}:</label>
           </div>
+        </div>
+      </Dialog>
+
+      <Dialog
+        className={'border-primary w-8'}
+        visible={gameDetailsDialogOpen}
+        onHide={() => handleCloseGameDetailsDialog()}
+        header={`Jogo ${game.id}`}
+      >
+        <Divider />
+        <div className={'p-fluid grid formgrid'}></div>
+        <div className={'col-6'}>
+          <p> Nº do Jogo: {game.id}</p>
         </div>
       </Dialog>
     </main>
