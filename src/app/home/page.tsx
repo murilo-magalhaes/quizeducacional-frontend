@@ -36,6 +36,7 @@ import {
 
 export default function HomePage() {
   const toast = useToastContext();
+  // esse isLoading não tá sendo usado nunca em
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const [subjectsDialogOpen, setSubjectsDialogOpen] = useState<boolean>(false);
