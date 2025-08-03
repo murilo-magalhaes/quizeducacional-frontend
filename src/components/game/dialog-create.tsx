@@ -46,6 +46,7 @@ const CreateGameDialog: React.FC<DialogProps> = (props: DialogProps) => {
     api
       .post(`/games/generate`, {
         qntQuestions: game.qntQuestions,
+        qntAlternatives: game.qntAlternatives,
         contentId: game.contentId,
       })
       .then((res) => {
