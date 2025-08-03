@@ -5,6 +5,7 @@ import { GamePlayer } from '@/interfaces/gamePlayer.interface';
 import { PlayerAnswer } from '@/interfaces/playerAnswer.interface';
 
 export interface Game extends Abstract {
+  qntAlternatives: number;
   qntQuestions: number;
   contentId: number;
   content: Content;
@@ -16,6 +17,7 @@ export interface Game extends Abstract {
 export const emptyGame: Game = {
   ...emptyAbstract,
   qntQuestions: 0,
+  qntAlternatives: 0,
   contentId: 0,
   content: emptyContent,
   questions: [],
