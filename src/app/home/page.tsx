@@ -29,10 +29,23 @@ import { emptyGame, Game } from '@/interfaces/game.interface';
 import { InputSwitch } from 'primereact/inputswitch';
 import GameCard from '@/components/game/card';
 import { Divider } from 'primereact/divider';
-import {
-  emptyGameQuestion,
-  GameQuestion,
-} from '@/interfaces/gameQuestion.interface';
+import PlayGameCard from '@/components/game/play-game-card';
+import { ProgressBar } from 'primereact/progressbar';
+
+interface ICreateAlternative extends Alternative {
+  forDoubt: boolean;
+  forDoubtToQuestionId: number;
+  correct: boolean;
+  correctToQuestionId: number;
+}
+
+const emptyCreateAlternative: ICreateAlternative = {
+  ...emptyAlternative,
+  correct: false,
+  correctToQuestionId: 0,
+  forDoubt: false,
+  forDoubtToQuestionId: 0,
+};
 
 export default function HomePage() {
   const toast = useToastContext();
@@ -52,16 +65,16 @@ export default function HomePage() {
 
   const [alternativesDialogOpen, setAlternativesDialogOpen] =
     useState<boolean>(false);
-  const [alternatives, setAlternatives] = useState<Alternative[]>([]);
-  const [alternative, setAlternative] = useState<Alternative>(emptyAlternative);
+  const [alternatives, setAlternatives] = useState<ICreateAlternative[]>([]);
+  const [alternative, setAlternative] = useState<ICreateAlternative>(
+    emptyCreateAlternative,
+  );
 
   const [generateGameDialogOpen, setGenerateGameDialogOpen] =
     useState<boolean>(false);
   const [games, setGames] = useState<Game[]>([]);
   const [game, setGame] = useState<Game>(emptyGame);
-  const [gameDialogOpen, setGameDialogOpen] = useState<boolean>(false);
-  const [currentQuestion, setCurrentQuestion] =
-    useState<GameQuestion>(emptyGameQuestion);
+  const [playGameDialogOpen, setPlayGameDialogOpen] = useState<boolean>(false);
 
   const [gameDetailsDialogOpen, setGameDetailsDialogOpen] =
     useState<boolean>(false);
@@ -296,27 +309,19 @@ export default function HomePage() {
       .finally(() => setIsLoading(false));
   };
 
-  const findCurrentQuestion = (game: Game) => {
-    if (game.playersAnswers.length === 0) {
-      setCurrentQuestion(game.questions[0]);
-    }
-  };
-
   const handleOpenGameDialog = (game: Game) => {
-    setGameDialogOpen(true);
+    setPlayGameDialogOpen(true);
     setGame(game);
-    findCurrentQuestion(game);
   };
 
-  const handleCloseGameDialog = () => {
-    setGameDialogOpen(false);
+  const handleClosePlayGameDialog = () => {
+    setPlayGameDialogOpen(false);
     setGame(emptyGame);
   };
 
   const handleOpenGameDetailsDialog = (game: Game) => {
     setGameDetailsDialogOpen(true);
     setGame(game);
-    findCurrentQuestion(game);
   };
 
   const handleCloseGameDetailsDialog = () => {
@@ -354,9 +359,9 @@ export default function HomePage() {
 
   const renderColumnLevel = (level: ELevel) => TLevel[level];
 
-  // @ts-ignore
   return (
     <main className={'px-8'}>
+      {isLoading && <ProgressBar mode={'indeterminate'} />}
       <div className={'flex w-full'}>
         <div className="w-10 flex flex-wrap gap-2">
           <Button
@@ -419,6 +424,12 @@ export default function HomePage() {
           }}
         />
       </div>
+
+      <PlayGameCard
+        id={game.id}
+        visible={playGameDialogOpen}
+        onClose={handleClosePlayGameDialog}
+      />
 
       <div className={'w-full mt-6 grid gap-2'}>
         {games.map((game) => (
@@ -746,27 +757,6 @@ export default function HomePage() {
             body={(r) => renderDeleteButton('alternatives', r.id)}
           ></Column>
         </DataTable>
-      </Dialog>
-
-      <Dialog
-        className={'border-primary w-8'}
-        visible={gameDialogOpen}
-        onHide={() => handleCloseGameDialog()}
-        header={`Jogo ${game.id}`}
-      >
-        <div className={'p-fluid grid formgrid'}>
-          <div className={'col-6'}>
-            <p>Disciplina: {game.content.subject.title}</p>
-          </div>
-          <div className={'col-6'}>
-            <p>Conteúdo: {game.content.title}</p>
-          </div>
-
-          <Divider />
-          <div className={'col-12'}>
-            <label>Pergunta {currentQuestion?.position}:</label>
-          </div>
-        </div>
       </Dialog>
 
       <Dialog

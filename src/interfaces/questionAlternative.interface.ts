@@ -7,10 +7,12 @@ import {
 
 export interface QuestionAlternative extends Abstract {
   questionId: number;
-  question: Question;
+  question?: Question;
   alternativeId: number;
-  alternative: Alternative;
+  alternative?: Alternative;
   position: number;
+  correct: boolean;
+  forDoubt: boolean;
 }
 
 export const emptyQuestionAlternative: QuestionAlternative = {
@@ -20,4 +22,6 @@ export const emptyQuestionAlternative: QuestionAlternative = {
   alternativeId: 0,
   alternative: emptyAlternative,
   position: 0,
+  correct: false,
+  forDoubt: false,
 };

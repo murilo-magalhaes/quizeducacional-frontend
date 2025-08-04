@@ -1,20 +1,20 @@
 import { Abstract, emptyAbstract } from '@/interfaces/abstract.interface';
-import { emptyGame, Game } from '@/interfaces/game.interface';
-import { emptyQuestion, Question } from '@/interfaces/question.interface';
+import { Game } from '@/interfaces/game.interface';
+import { Question } from '@/interfaces/question.interface';
 
 export interface GameQuestion extends Abstract {
   gameId: number;
-  game: Game;
+  game?: Game;
   questionId: number;
-  question: Question;
+  question?: Question;
   position: number;
 }
 
 export const emptyGameQuestion: GameQuestion = {
   ...emptyAbstract,
   gameId: 0,
-  game: emptyGame,
+  game: undefined,
   questionId: 0,
-  question: emptyQuestion,
+  question: undefined,
   position: 0,
 };

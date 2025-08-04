@@ -7,6 +7,7 @@ import { Dropdown } from 'primereact/dropdown';
 import { Content, emptyContent } from '@/interfaces/content.interface';
 import { InputNumber } from 'primereact/inputnumber';
 import { Button } from 'primereact/button';
+import { emptyPlayer, Player } from '@/interfaces/player.interface';
 
 export interface DialogProps {
   visible: boolean;
@@ -21,6 +22,19 @@ const CreateGameDialog: React.FC<DialogProps> = (props: DialogProps) => {
 
   const [contents, setContents] = useState<Content[]>([]);
   const [content, setContent] = useState<Content>(emptyContent);
+
+  const [player, setPlayer] = useState<Player>(emptyPlayer);
+
+  useEffect(() => {
+    if (props.visible) {
+      loadContents().then();
+
+      const player = localStorage.getItem('player');
+      if (player !== null) {
+        setPlayer(JSON.parse(player));
+      }
+    }
+  }, [props.visible]);
 
   const loadContents = async () => {
     setIsLoading(true);
@@ -37,16 +51,13 @@ const CreateGameDialog: React.FC<DialogProps> = (props: DialogProps) => {
       .finally(() => setIsLoading(false));
   };
 
-  useEffect(() => {
-    if (props.visible) loadContents().then();
-  }, [props.visible]);
-
   const generateGame = async () => {
     setIsLoading(true);
     api
       .post(`/games/generate`, {
         qntQuestions: game.qntQuestions,
         contentId: game.contentId,
+        playerId: player.id,
       })
       .then((res) => {
         console.log(res);
