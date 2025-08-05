@@ -91,7 +91,9 @@ export default function PlayGameCard({ id, visible, onClose }: Props) {
   };
 
   const findCurrentQuestion = (currentPlayer: GamePlayer) => {
-    const questionPosition = currentPlayer.answers.length;
+    let questionPosition = currentPlayer.answers.length - 1;
+    if (questionPosition < 0) questionPosition = 0;
+
     setCurrentQuestion(game.questions[questionPosition]);
     if (questionPosition > 0)
       toast(
@@ -208,12 +210,12 @@ export default function PlayGameCard({ id, visible, onClose }: Props) {
         <Divider />
         <div className={'col-12 flex justify-content-end'}>
           <b>
-            {currentQuestion.position + 1}/{game.qntQuestions}
+            {currentQuestion?.position + 1}/{game.qntQuestions}
           </b>
         </div>
         <div className={'col-12'}>
           <p>
-            <b>{currentQuestion.position + 1}.</b>{' '}
+            <b>{currentQuestion?.position + 1}.</b>{' '}
             {currentQuestion.question?.statement}
           </p>
         </div>
