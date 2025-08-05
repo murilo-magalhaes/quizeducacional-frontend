@@ -8,7 +8,6 @@ import {
   emptyGameQuestion,
   GameQuestion,
 } from '@/interfaces/gameQuestion.interface';
-import { mockGames } from '@/mock/game.mock';
 import Loading from '@/components/Loading';
 import numberToChar from '@/utils/numberToChar';
 import { emptyPlayer, Player } from '@/interfaces/player.interface';
@@ -38,13 +37,37 @@ export default function PlayGameCard({ id, visible, onClose }: Props) {
     useState<number>(-1);
   const [correctAlternativeId, setCorrectAlternativeId] = useState<number>(-1);
 
+  const [isFinished, setIsFinished] = useState<boolean>(false);
+
+  const [audio] = useState(() => new Audio('/rodaaroda.mp3'));
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
+
+  const playAudio = () => {
+    audio
+      .play()
+      .then(() => setIsPlaying(true))
+      .catch((err) => {
+        console.warn('Falha ao tocar áudio:', err);
+      });
+  };
+
+  const pauseAudio = () => {
+    audio.pause();
+    setIsPlaying(false);
+  };
+
   useEffect(() => {
     if (visible) {
       loadGame().then();
+      playAudio();
 
-      const player = localStorage.getItem('player');
-      if (player !== null) {
-        setPlayer(JSON.parse(player));
+      const playerString = localStorage.getItem('player');
+      if (playerString) {
+        try {
+          setPlayer(JSON.parse(playerString));
+        } catch (error) {
+          console.error('Erro ao fazer parse do player:', error);
+        }
       }
     }
   }, [visible]);
@@ -55,12 +78,12 @@ export default function PlayGameCard({ id, visible, onClose }: Props) {
 
   const findCurrentPlayer = () => {
     setCurrentPlayer(
-      game.players.find((gp) => gp.playerId === player.id) || emptyGamePlayer,
+      game.players?.find((gp) => gp.playerId === player.id) || emptyGamePlayer,
     );
   };
 
   const findCurrentQuestion = (game: Game) => {
-    if (game.playersAnswers?.length === 0) {
+    if (!game.playersAnswers || game.playersAnswers?.length === 0) {
       setCurrentQuestion(game.questions[0]);
     }
   };
@@ -71,9 +94,11 @@ export default function PlayGameCard({ id, visible, onClose }: Props) {
       .get(`/games/${id}`)
       .then((res) => {
         console.log(res.data);
-        // setGame(res.data);
-        setGame(mockGames[0]);
-        findCurrentQuestion(mockGames[0]);
+        setGame({
+          ...res.data,
+          questions: res.data.questions.sort((a: any, b: any) => a.id - b.id),
+        });
+        findCurrentQuestion(res.data);
       })
       .catch((err) => {
         console.error(err);
@@ -110,16 +135,14 @@ export default function PlayGameCard({ id, visible, onClose }: Props) {
   };
 
   const nextQuestion = () => {
-    if (currentQuestion.position < game.qntQuestions - 1) {
-      setCurrentQuestion(
-        (prev) =>
-          game.questions.find((gq) => gq.position === prev.position + 1) ||
-          emptyGameQuestion,
-      );
-      setShowNextButton(false);
-      setSelectedAlternativeId(-1);
-      setCorrectAlternativeId(-1);
-    }
+    setCurrentQuestion(
+      (prev) =>
+        game.questions.find((gq) => gq.position === prev.position + 1) ||
+        emptyGameQuestion,
+    );
+    setShowNextButton(false);
+    setSelectedAlternativeId(-1);
+    setCorrectAlternativeId(-1);
   };
 
   const getColorByAnswer = (id: number): string => {
@@ -140,6 +163,10 @@ export default function PlayGameCard({ id, visible, onClose }: Props) {
     return color;
   };
 
+  const showResults = async () => {
+    setIsLoading(true);
+  };
+
   return (
     <Dialog
       className={'border-primary w-8'}
@@ -152,8 +179,15 @@ export default function PlayGameCard({ id, visible, onClose }: Props) {
         <div className={'col-6'}>
           <p className={'m-0'}>Disciplina: {game.content.subject.title}</p>
         </div>
-        <div className={'col-6'}>
+        <div className={'col-5'}>
           <p className={'m-0'}>Conteúdo: {game.content.title}</p>
+        </div>
+        <div className={'col-1'}>
+          {isPlaying ? (
+            <i className={'fas fa-pause'} onClick={pauseAudio} />
+          ) : (
+            <i className={'fas fa-play'} onClick={playAudio} />
+          )}
         </div>
 
         <Divider />
@@ -162,7 +196,7 @@ export default function PlayGameCard({ id, visible, onClose }: Props) {
             {currentQuestion.position + 1}/{game.qntQuestions}
           </b>
         </div>
-        <div className={'col-12 mt-4'}>
+        <div className={'col-12'}>
           <p>
             <b>{currentQuestion.position + 1}.</b>{' '}
             {currentQuestion.question?.statement}
@@ -189,8 +223,16 @@ export default function PlayGameCard({ id, visible, onClose }: Props) {
           <div className={'col-12 p-0 mt-4'}>
             <Button
               className={'w-full'}
-              label={'Próxima questão'}
-              onClick={nextQuestion}
+              label={
+                currentQuestion.position + 1 === game.qntQuestions
+                  ? 'Ir para resultados'
+                  : 'Próxima questão'
+              }
+              onClick={
+                currentQuestion.position + 1 === game.qntQuestions
+                  ? showResults
+                  : nextQuestion
+              }
               iconPos={'right'}
               icon={'pi pi-arrow-right'}
             />

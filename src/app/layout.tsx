@@ -4,6 +4,7 @@ import 'primereact/resources/themes/lara-dark-green/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeflex/primeflex.min.css';
 import 'primeicons/primeicons.css';
+import '@fortawesome/fontawesome-free/css/all.css';
 import './globals.css';
 import React from 'react';
 import AppToastContext from '@/context/AppToastContext';

@@ -123,6 +123,30 @@ export const mockGames: Game[] = [
         },
         position: 0,
       },
+      {
+        status: 'A',
+        updatedAt: new Date(),
+        createdAt: new Date(),
+        id: 2,
+        gameId: 1,
+        questionId: 1,
+        question: {
+          id: 2,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          status: 'A',
+          contentId: 1,
+          level: ELevel.EASY,
+          statement: 'Quanto é 1+2?',
+          alternatives: mockAlternatives.map((qa) => {
+            return {
+              ...qa,
+              correct: qa.alternative?.alternativeText === '3',
+            };
+          }),
+        },
+        position: 1,
+      },
     ],
     status: 'A',
     updatedAt: new Date(),

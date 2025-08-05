@@ -3,7 +3,6 @@ import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { Divider } from 'primereact/divider';
 import { Game } from '@/interfaces/game.interface';
-import { EGameStatus } from '@/interfaces/gamePlayer.interface';
 import { emptyPlayer, Player } from '@/interfaces/player.interface';
 
 interface GameCardProps {
@@ -104,8 +103,10 @@ const GameCard: React.FC<GameCardProps> = ({
           </div>
           <div className="col-6">
             <div className="text-center">
-              <div className="text-2xl font-bold text-orange-500">{0}</div>
-              <div className="text-sm text-600">Jogadores</div>
+              <div className="text-2xl font-bold text-orange-500">
+                {game.players?.length || 1}
+              </div>
+              <div className="text-sm text-600">Jogador(es)</div>
             </div>
           </div>
         </div>
