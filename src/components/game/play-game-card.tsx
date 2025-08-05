@@ -53,6 +53,7 @@ export default function PlayGameCard({ id, visible, onClose }: Props) {
 
   const pauseAudio = () => {
     audio.pause();
+    audio.currentTime = 0;
     setIsPlaying(false);
   };
 
@@ -171,7 +172,10 @@ export default function PlayGameCard({ id, visible, onClose }: Props) {
     <Dialog
       className={'border-primary w-8'}
       visible={visible}
-      onHide={onClose}
+      onHide={() => {
+        pauseAudio();
+        onClose();
+      }}
       header={`Jogo ${game.id}`}
     >
       <Loading isLoading={isLoading} />
@@ -184,9 +188,9 @@ export default function PlayGameCard({ id, visible, onClose }: Props) {
         </div>
         <div className={'col-1'}>
           {isPlaying ? (
-            <i className={'fas fa-pause'} onClick={pauseAudio} />
+            <i className={'fas fa-pause cursor-pointer'} onClick={pauseAudio} />
           ) : (
-            <i className={'fas fa-play'} onClick={playAudio} />
+            <i className={'fas fa-play cursor-pointer'} onClick={playAudio} />
           )}
         </div>
 
