@@ -75,18 +75,30 @@ export default function PlayGameCard({ id, visible, onClose }: Props) {
 
   useEffect(() => {
     findCurrentPlayer();
-  }, [player, game]);
+  }, [game]);
 
   const findCurrentPlayer = () => {
-    setCurrentPlayer(
-      game.players?.find((gp) => gp.playerId === player.id) || emptyGamePlayer,
-    );
+    if (player.id !== 0) {
+      const currentPlayer = game.players?.find(
+        (gp) => gp.playerId === player.id,
+      );
+
+      if (currentPlayer) {
+        setCurrentPlayer(currentPlayer);
+        findCurrentQuestion(currentPlayer);
+      }
+    }
   };
 
-  const findCurrentQuestion = (game: Game) => {
-    if (!game.playersAnswers || game.playersAnswers?.length === 0) {
-      setCurrentQuestion(game.questions[0]);
-    }
+  const findCurrentQuestion = (currentPlayer: GamePlayer) => {
+    const questionPosition = currentPlayer.answers.length;
+    setCurrentQuestion(game.questions[questionPosition]);
+    if (questionPosition > 0)
+      toast(
+        'info',
+        'Info',
+        `Continuando jogo pausado, você havia parado na questão nº${questionPosition + 1}`,
+      );
   };
 
   const loadGame = async () => {
@@ -99,7 +111,6 @@ export default function PlayGameCard({ id, visible, onClose }: Props) {
           ...res.data,
           questions: res.data.questions.sort((a: any, b: any) => a.id - b.id),
         });
-        findCurrentQuestion(res.data);
       })
       .catch((err) => {
         console.error(err);

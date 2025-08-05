@@ -2,7 +2,6 @@ import { Abstract, emptyAbstract } from '@/interfaces/abstract.interface';
 import { Content, emptyContent } from '@/interfaces/content.interface';
 import { GameQuestion } from '@/interfaces/gameQuestion.interface';
 import { GamePlayer } from '@/interfaces/gamePlayer.interface';
-import { PlayerAnswer } from '@/interfaces/playerAnswer.interface';
 
 export interface Game extends Abstract {
   qntQuestions: number;
@@ -10,7 +9,6 @@ export interface Game extends Abstract {
   content: Content;
   questions: GameQuestion[];
   players: GamePlayer[];
-  playersAnswers: PlayerAnswer[];
 }
 
 export const emptyGame: Game = {
@@ -20,5 +18,4 @@ export const emptyGame: Game = {
   content: emptyContent,
   questions: [],
   players: [],
-  playersAnswers: [],
 };

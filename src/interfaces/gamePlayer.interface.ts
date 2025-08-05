@@ -1,13 +1,13 @@
 import { Abstract, emptyAbstract } from '@/interfaces/abstract.interface';
 import { emptyGame, Game } from '@/interfaces/game.interface';
 import { emptyPlayer, Player } from '@/interfaces/player.interface';
+import { PlayerAnswer } from '@/interfaces/playerAnswer.interface';
 
 export enum EGameStatus {
   NOT_STARTED = 'NOT_STARTED',
   IN_PROGRESS = 'IN_PROGRESS',
   PAUSED = 'PAUSED',
-  WON = 'WON',
-  LOSED = 'LOSED',
+  FINISHED = 'FINISHED',
 }
 
 export interface GamePlayer extends Abstract {
@@ -18,6 +18,7 @@ export interface GamePlayer extends Abstract {
   score: number;
   gameStatus: EGameStatus;
   timeElapsed: number;
+  answers: PlayerAnswer[];
 }
 
 export const emptyGamePlayer: GamePlayer = {
@@ -29,4 +30,5 @@ export const emptyGamePlayer: GamePlayer = {
   score: 0,
   gameStatus: EGameStatus.NOT_STARTED,
   timeElapsed: 0,
+  answers: [],
 };

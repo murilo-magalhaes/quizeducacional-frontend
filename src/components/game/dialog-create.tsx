@@ -62,6 +62,7 @@ const CreateGameDialog: React.FC<DialogProps> = (props: DialogProps) => {
       .then((res) => {
         console.log(res);
         toast('success', 'Sucesso', 'Novo jogo gerado com sucesso!');
+        props.onClose();
       })
       .catch((err) => {
         console.error(err);
