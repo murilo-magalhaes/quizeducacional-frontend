@@ -78,10 +78,12 @@ export default function PlayGameCard({ id, visible, onClose }: Props) {
   }, [game]);
 
   const findCurrentPlayer = () => {
-    if (player.id !== 0) {
+    if (player.id !== 0 && game.id !== 0) {
       const currentPlayer = game.players?.find(
         (gp) => gp.playerId === player.id,
       );
+
+      console.log({ currentPlayer });
 
       if (currentPlayer) {
         setCurrentPlayer(currentPlayer);
@@ -91,8 +93,12 @@ export default function PlayGameCard({ id, visible, onClose }: Props) {
   };
 
   const findCurrentQuestion = (currentPlayer: GamePlayer) => {
-    let questionPosition = currentPlayer.answers.length - 1;
-    if (questionPosition < 0) questionPosition = 0;
+    if (currentPlayer.answers.length === game.qntQuestions) {
+      setIsFinished(true);
+      return;
+    }
+
+    const questionPosition = currentPlayer.answers.length;
 
     setCurrentQuestion(game.questions[questionPosition]);
     if (questionPosition > 0)
@@ -178,7 +184,7 @@ export default function PlayGameCard({ id, visible, onClose }: Props) {
   };
 
   const showResults = async () => {
-    setIsLoading(true);
+    loadGame().then(() => setIsFinished(true));
   };
 
   return (
@@ -208,52 +214,72 @@ export default function PlayGameCard({ id, visible, onClose }: Props) {
         </div>
 
         <Divider />
-        <div className={'col-12 flex justify-content-end'}>
-          <b>
-            {currentQuestion?.position + 1}/{game.qntQuestions}
-          </b>
-        </div>
-        <div className={'col-12'}>
-          <p>
-            <b>{currentQuestion?.position + 1}.</b>{' '}
-            {currentQuestion.question?.statement}
-          </p>
-        </div>
-        {currentQuestion.question?.alternatives.map((questionAlternative) => (
-          <div
-            key={questionAlternative.id}
-            className={'col-6 cursor-pointer mt-2 p-1'}
-          >
-            <p
-              style={{
-                backgroundColor: getColorByAnswer(questionAlternative.id),
-              }}
-              onClick={() => selectAlternative(questionAlternative.id)}
-              className={'border-primary highlight-hover p-2 m-0'}
-            >
-              <b>{numberToChar(questionAlternative.position + 1)})</b>{' '}
-              {questionAlternative.alternative?.alternativeText}
-            </p>
-          </div>
-        ))}
-        {showNextButton && (
-          <div className={'col-12 p-0 mt-4'}>
-            <Button
-              className={'w-full'}
-              label={
-                currentQuestion.position + 1 === game.qntQuestions
-                  ? 'Ir para resultados'
-                  : 'Próxima questão'
-              }
-              onClick={
-                currentQuestion.position + 1 === game.qntQuestions
-                  ? showResults
-                  : nextQuestion
-              }
-              iconPos={'right'}
-              icon={'pi pi-arrow-right'}
-            />
-          </div>
+        {isFinished ? (
+          <>
+            <div className={'col-12 text-center'}>
+              <h1>Jogo finalizado</h1>
+            </div>
+            <div className={'col-12 text-center'}>
+              <h2>
+                Pontuação:{' '}
+                <b>
+                  {currentPlayer.score}/{game.qntQuestions}
+                </b>
+              </h2>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className={'col-12 flex justify-content-end'}>
+              <b>
+                {currentQuestion?.position + 1}/{game.qntQuestions}
+              </b>
+            </div>
+            <div className={'col-12'}>
+              <p>
+                <b>{currentQuestion?.position + 1}.</b>{' '}
+                {currentQuestion.question?.statement}
+              </p>
+            </div>
+            {currentQuestion.question?.alternatives.map(
+              (questionAlternative) => (
+                <div
+                  key={questionAlternative.id}
+                  className={'col-6 cursor-pointer mt-2 p-1'}
+                >
+                  <p
+                    style={{
+                      backgroundColor: getColorByAnswer(questionAlternative.id),
+                    }}
+                    onClick={() => selectAlternative(questionAlternative.id)}
+                    className={'border-primary highlight-hover p-2 m-0'}
+                  >
+                    <b>{numberToChar(questionAlternative.position + 1)})</b>{' '}
+                    {questionAlternative.alternative?.alternativeText}
+                  </p>
+                </div>
+              ),
+            )}
+            {showNextButton && (
+              <div className={'col-12 p-0 mt-4'}>
+                <Button
+                  className={'w-full'}
+                  label={
+                    currentQuestion.position + 1 === game.qntQuestions
+                      ? 'Ir para resultados'
+                      : 'Próxima questão'
+                  }
+                  onClick={
+                    currentQuestion.position + 1 === game.qntQuestions
+                      ? showResults
+                      : nextQuestion
+                  }
+                  iconPos={'right'}
+                  icon={'pi pi-arrow-right'}
+                />
+              </div>
+            )}
+          </>
         )}
       </div>
     </Dialog>
