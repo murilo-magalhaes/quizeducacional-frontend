@@ -4,24 +4,31 @@ import { Button } from 'primereact/button';
 import { Divider } from 'primereact/divider';
 import { Game } from '@/interfaces/game.interface';
 import { emptyPlayer, Player } from '@/interfaces/player.interface';
+import { Tag } from 'primereact/tag';
+import {
+  EGameStatus,
+  emptyGamePlayer,
+  GamePlayer,
+} from '@/interfaces/gamePlayer.interface';
 
 interface GameCardProps {
   game: Game;
   onStartGame?: (gameId: number) => void;
-  onViewDetails?: (gameId: number) => void;
 }
 
-const GameCard: React.FC<GameCardProps> = ({
-  game,
-  onStartGame,
-  onViewDetails,
-}) => {
+const GameCard: React.FC<GameCardProps> = ({ game, onStartGame }) => {
   const [player, setPlayer] = useState<Player>(emptyPlayer);
+  const [currentPlayer, setCurrentPlayer] =
+    useState<GamePlayer>(emptyGamePlayer);
 
   useEffect(() => {
     const player = JSON.parse(localStorage.getItem('player') || '');
     setPlayer(player);
   }, []);
+
+  useEffect(() => {
+    findCurrentPlayer();
+  }, [player]);
 
   // Formatação de data
   const formatDate = (date: Date) => {
@@ -34,6 +41,40 @@ const GameCard: React.FC<GameCardProps> = ({
     }).format(new Date(date));
   };
 
+  const findCurrentPlayer = () => {
+    if (player.id !== 0 && game.id !== 0) {
+      const currentPlayer = game.players?.find(
+        (gp) => gp.playerId === player.id,
+      );
+
+      if (currentPlayer) {
+        setCurrentPlayer(currentPlayer);
+      }
+    }
+  };
+
+  const getStatus = () => {
+    const TGameStatus = {
+      [EGameStatus.NOT_STARTED]: 'Não iniciado',
+      [EGameStatus.FINISHED]: 'Finalizado',
+      [EGameStatus.PAUSED]: 'Pausado',
+      [EGameStatus.IN_PROGRESS]: 'Em progresso',
+    };
+
+    return TGameStatus[currentPlayer.gamePlayerStatus];
+  };
+
+  const getSeverity = () => {
+    const SeverityGameStatus = {
+      [EGameStatus.NOT_STARTED]: 'danger',
+      [EGameStatus.FINISHED]: 'info',
+      [EGameStatus.PAUSED]: 'warning',
+      [EGameStatus.IN_PROGRESS]: 'success',
+    };
+
+    return SeverityGameStatus[currentPlayer.gamePlayerStatus];
+  };
+
   // Header do card
   const cardHeader = (
     <div className="flex justify-content-between align-items-center p-3 bg-primary-50">
@@ -41,27 +82,43 @@ const GameCard: React.FC<GameCardProps> = ({
         <i className="pi pi-game-controller text-primary text-xl"></i>
         <h4 className="m-0 text-primary">Jogo #{game.id}</h4>
       </div>
+      <Tag
+        severity={getSeverity() as 'danger' | 'info' | 'success' | 'warning'}
+      >
+        {getStatus()}
+      </Tag>
     </div>
   );
+
+  const getActionLabel = () => {
+    const TGameStatus = {
+      [EGameStatus.NOT_STARTED]: 'Iniciar',
+      [EGameStatus.FINISHED]: 'Ver detalhes',
+      [EGameStatus.PAUSED]: 'Continuar',
+      [EGameStatus.IN_PROGRESS]: 'Continuar',
+    };
+
+    return TGameStatus[currentPlayer.gamePlayerStatus];
+  };
 
   // Footer do card
   const cardFooter = (
     <div className="flex gap-2 py-3">
       <Button
-        label={'Iniciar'}
-        icon="pi pi-play"
+        label={getActionLabel()}
+        icon={
+          currentPlayer.gamePlayerStatus === EGameStatus.FINISHED
+            ? 'pi pi-info'
+            : 'pi pi-play'
+        }
         className="flex-1"
-        severity="success"
+        severity={
+          currentPlayer.gamePlayerStatus === EGameStatus.FINISHED
+            ? 'info'
+            : 'success'
+        }
         onClick={() => onStartGame?.(game.id)}
         disabled={game.status === 'C'}
-      />
-      <Button
-        label="Detalhes"
-        icon="pi pi-info-circle"
-        className="flex-1"
-        severity="info"
-        outlined
-        onClick={() => onViewDetails?.(game.id)}
       />
     </div>
   );
@@ -108,6 +165,11 @@ const GameCard: React.FC<GameCardProps> = ({
               </div>
               <div className="text-sm text-600">Jogador(es)</div>
             </div>
+          </div>
+          <div className="col-12">
+            <span className="font-semibold text-primary">
+              Sua pontuação: {currentPlayer.score}/{game.qntQuestions}
+            </span>
           </div>
         </div>
 

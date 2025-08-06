@@ -28,7 +28,6 @@ import CreateGameDialog from '@/components/game/dialog-create';
 import { emptyGame, Game } from '@/interfaces/game.interface';
 import { InputSwitch } from 'primereact/inputswitch';
 import GameCard from '@/components/game/card';
-import { Divider } from 'primereact/divider';
 import PlayGameCard from '@/components/game/play-game-card';
 import { ProgressBar } from 'primereact/progressbar';
 
@@ -75,9 +74,6 @@ export default function HomePage() {
   const [games, setGames] = useState<Game[]>([]);
   const [game, setGame] = useState<Game>(emptyGame);
   const [playGameDialogOpen, setPlayGameDialogOpen] = useState<boolean>(false);
-
-  const [gameDetailsDialogOpen, setGameDetailsDialogOpen] =
-    useState<boolean>(false);
 
   const [player, setPlayer] = useState<Player>(emptyPlayer);
 
@@ -317,16 +313,7 @@ export default function HomePage() {
   const handleClosePlayGameDialog = () => {
     setPlayGameDialogOpen(false);
     setGame(emptyGame);
-  };
-
-  const handleOpenGameDetailsDialog = (game: Game) => {
-    setGameDetailsDialogOpen(true);
-    setGame(game);
-  };
-
-  const handleCloseGameDetailsDialog = () => {
-    setGameDetailsDialogOpen(false);
-    setGame(emptyGame);
+    loadGames().then();
   };
 
   const renderDeleteButton = (entity: string, id: number) => {
@@ -437,7 +424,6 @@ export default function HomePage() {
             <GameCard
               game={game}
               onStartGame={() => handleOpenGameDialog(game)}
-              onViewDetails={() => handleOpenGameDetailsDialog(game)}
             />
           </div>
         ))}
@@ -757,19 +743,6 @@ export default function HomePage() {
             body={(r) => renderDeleteButton('alternatives', r.id)}
           ></Column>
         </DataTable>
-      </Dialog>
-
-      <Dialog
-        className={'border-primary w-8'}
-        visible={gameDetailsDialogOpen}
-        onHide={() => handleCloseGameDetailsDialog()}
-        header={`Jogo ${game.id}`}
-      >
-        <Divider />
-        <div className={'p-fluid grid formgrid'}></div>
-        <div className={'col-6'}>
-          <p> Nº do Jogo: {game.id}</p>
-        </div>
       </Dialog>
     </main>
   );

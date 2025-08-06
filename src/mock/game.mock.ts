@@ -158,7 +158,7 @@ export const mockGames: Game[] = [
         createdAt: new Date(),
         gameId: 1,
         playerId: 1,
-        gameStatus: EGameStatus.NOT_STARTED,
+        gamePlayerStatus: EGameStatus.NOT_STARTED,
         score: 0,
         timeElapsed: 0,
       },

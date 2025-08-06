@@ -16,7 +16,7 @@ export interface GamePlayer extends Abstract {
   playerId: number;
   player?: Player;
   score: number;
-  gameStatus: EGameStatus;
+  gamePlayerStatus: EGameStatus;
   timeElapsed: number;
   answers: PlayerAnswer[];
 }
@@ -28,7 +28,7 @@ export const emptyGamePlayer: GamePlayer = {
   playerId: 0,
   player: emptyPlayer,
   score: 0,
-  gameStatus: EGameStatus.NOT_STARTED,
+  gamePlayerStatus: EGameStatus.NOT_STARTED,
   timeElapsed: 0,
   answers: [],
 };
